@@ -20,7 +20,7 @@ public class NoteService {
 
      public Note getNote(String noteId){ return noteMapper.getNote(noteId);}
 
-    // public Note editNote() {}
+     public void editNote(Note note) { noteMapper.updateNote(note);}
 
      public void deleteNote(String noteId) {noteMapper.deleteNote(noteId);}
 }

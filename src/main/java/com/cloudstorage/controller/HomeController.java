@@ -10,6 +10,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.servlet.ModelAndView;
 import org.springframework.web.servlet.view.RedirectView;
 
 import java.io.IOException;
@@ -29,20 +30,26 @@ public class HomeController {
         this.credentialService = credentialService;
         this.userService = userService;
     }
-//    @RequestMapping("/home")
+
     @GetMapping
-    public String getHomePage(Model model,Authentication authentication) {
-        model.addAttribute("notes", this.noteService.getAll());
-//        System.out.println(this.noteService.getAll());
-        return "home";
+    public ModelAndView getHomePage(Model model, Authentication authentication) {
+        ModelAndView modelAndView = new ModelAndView();
+        modelAndView.addObject("notes", this.noteService.getAll());
+        return modelAndView;
     }
-//    @RequestMapping("/home")
+
     @PostMapping
-    public String postNote(Authentication authentication, Note note, Model model) {
+    public String postOrEditNote(Authentication authentication, Note note, Model model) {
         User currentUser =  this.userService.getUser(authentication.getName());
         note.setUserId(currentUser.getUserId());
+        System.out.println(note.toString());
+        if (note.getNoteId() < 0) {
+            System.out.println("Creating new note");
         noteService.createNote(new Note(null, note.getNoteTitle(),
-                note.getNoteDescription(), note.getUserId()));
+                note.getNoteDescription(), note.getUserId()));} else{
+            System.out.println("Editing existing note");
+            noteService.editNote(note);
+        }
         model.addAttribute("notes", this.noteService.getAll());
         return "home";
     }

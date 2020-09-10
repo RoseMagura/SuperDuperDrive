@@ -78,7 +78,8 @@
                                 <tbody>
                                     <tr th:each="note: ${notes}">
                                         <td>
-                                            <button type="button" class="btn btn-success">Edit</button>
+                                            <button type="button" class="btn btn-success"
+                                                    th:onclick="javascript:showNoteModal([[${note}]])">Edit</button>
                                             <form action="#" th:action="@{'home/delete/{id}'(id=${note.noteId})}" th:method="POST">
 <!--                                                <a class="btn btn-danger">Delete</a>-->
                                                 <input type="hidden" name="_method" value="delete" />
@@ -110,10 +111,15 @@
                                             <div class="form-group">
                                                 <label for="note-title" class="col-form-label">Title</label>
                                                 <input type="text" name= "noteTitle" class="form-control" id="note-title" maxlength="20" required>
+<!--                                                       th:field="*{noteTitle}"-->
+<!--                                                >-->
                                             </div>
                                             <div class="form-group">
                                                 <label for="note-description" class="col-form-label">Description</label>
-                                                <textarea class="form-control" name="noteDescription" id="note-description" rows="5" maxlength="1000" required></textarea>
+                                                <textarea class="form-control" name="noteDescription" id="note-description" rows="5" maxlength="1000" required>
+<!--                                                          th:field="*{noteDescription}">-->
+
+                                                </textarea>
                                             </div>
                                             <button id="noteSubmit" type="submit" class="d-none"></button>
                                         </form>
@@ -201,10 +207,10 @@
         <!--For opening the note modal-->
         <script type="text/javascript">
             // For opening the note modal
-            function showNoteModal(noteId, noteTitle, noteDescription) {
-                $('#note-id').val(noteId ? noteId : '');
-                $('#note-title').val(noteTitle ? noteTitle : '');
-                $('#note-description').val(noteDescription ? noteDescription : '');
+            function showNoteModal(note) {
+                $('#note-id').val(note && note.noteId ? note.noteId : 0);
+                $('#note-title').val(note && note.noteTitle ? note.noteTitle : '');
+                $('#note-description').val(note && note.noteDescription ? note.noteDescription : '');
                 $('#noteModal').modal('show');
             }
 
