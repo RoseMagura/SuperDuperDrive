@@ -18,7 +18,7 @@ public class NoteService {
      public int createNote(Note note) { return noteMapper.createNote(note);}
      public List<Note> getAll(){return noteMapper.getAllNotes();}
 
-     public Note getNote(String noteTitle){ return noteMapper.getNote(noteTitle);}
+     public Note getNote(String noteId){ return noteMapper.getNote(noteId);}
 
     // public Note editNote() {}
 

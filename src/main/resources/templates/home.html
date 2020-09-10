@@ -79,7 +79,12 @@
                                     <tr th:each="note: ${notes}">
                                         <td>
                                             <button type="button" class="btn btn-success">Edit</button>
-                                            <a class="btn btn-danger">Delete</a>
+                                            <form action="#" th:action="@{'home/delete/{id}'(id=${note.noteId})}" th:method="POST">
+<!--                                                <a class="btn btn-danger">Delete</a>-->
+                                                <input type="hidden" name="_method" value="delete" />
+                                                <button type="submit" id="submitButton" class="btn btn-danger">Delete</button>
+                                            </form>
+
                                         </td>
 <!--                                        <th scope="row">Example Note Title</th>-->
 <!--                                        <td>Example Note Description </td>-->

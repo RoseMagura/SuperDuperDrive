@@ -15,17 +15,17 @@ public interface NoteMapper {
     @Select("SELECT * FROM NOTES")
     List<Note> getAllNotes();
 
-    @Select("SELECT * FROM NOTES WHERE notetitle = #{noteTitle}")
-    Note getNote(String noteTitle);
+    @Select("SELECT * FROM NOTES WHERE noteid = #{noteId}")
+    Note getNote(String noteId);
 
     @Insert("INSERT INTO NOTES (notetitle, notedescription, userid) " +
             "VALUES(#{noteTitle}, #{noteDescription}, #{userId})")
     @Options(useGeneratedKeys = true, keyProperty = "noteId")
     int createNote(Note note);
 
-    @Delete("DELETE FROM NOTES WHERE notetitle = #{noteTitle}")
-    void deleteNote(String noteTitle);
+    @Delete("DELETE FROM NOTES WHERE noteid = #{noteId}")
+    void deleteNote(String noteId);
 
-    @Update("UPDATE note set notetitle = #{noteTitle}, notedescription = #{noteDescription}")
+    @Update("UPDATE note set notetitle = #{noteTitle}, notedescription = #{noteDescription} WHERE noteid = #{noteId}")
     void updateNote(Note note);
 }
