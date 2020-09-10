@@ -4,6 +4,7 @@ import org.springframework.stereotype.Service;
 import com.cloudstorage.model.File;
 import com.cloudstorage.mapper.FileMapper;
 
+@Service
 public class FileService {
     private final FileMapper fileMapper;
 
@@ -11,7 +12,7 @@ public class FileService {
         this.fileMapper = fileMapper;
     }
 
-    // public int createFile(File file) { return fileMapper.insert(file);}
+     public int createFile(File file) { return fileMapper.createFile(file);}
 
     // public File getFile(String fileId){ return fileMapper.getFile(fileId);}
 

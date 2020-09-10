@@ -8,8 +8,13 @@ import org.apache.ibatis.annotations.Select;
 import org.apache.ibatis.annotations.Delete;
 import org.apache.ibatis.annotations.Update;
 
+import java.util.List;
+
 @Mapper
 public interface NoteMapper {
+    @Select("SELECT * FROM NOTES")
+    List<Note> getAllNotes();
+
     @Select("SELECT * FROM NOTES WHERE notetitle = #{noteTitle}")
     Note getNote(String noteTitle);
 

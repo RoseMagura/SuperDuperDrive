@@ -4,6 +4,7 @@ import org.springframework.stereotype.Service;
 import com.cloudstorage.model.Credential;
 import com.cloudstorage.mapper.CredentialMapper;
 
+@Service
 public class CredentialService {
     private final CredentialMapper credentialMapper;
 

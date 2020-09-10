@@ -3,6 +3,7 @@ package com.cloudstorage.mapper;
 import com.cloudstorage.model.File;
 import org.apache.ibatis.annotations.*;
 
+@Mapper
 public interface FileMapper {
     @Select("SELECT * FROM FILES WHERE filename = #{fileName}")
     File getFile(String fileName);

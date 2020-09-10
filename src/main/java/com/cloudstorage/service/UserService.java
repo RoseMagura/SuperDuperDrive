@@ -6,6 +6,7 @@ import org.springframework.stereotype.Service;
 
 import java.security.SecureRandom;
 import java.util.Base64;
+import java.util.List;
 
 @Service
 public class UserService {
@@ -33,5 +34,8 @@ public class UserService {
 
     public User getUser(String username) {
         return userMapper.getUser(username);
+
     }
+
+    public List<User> getAllUsers() { return userMapper.getAll();}
 }
