@@ -3,21 +3,26 @@ package com.cloudstorage.mapper;
 import com.cloudstorage.model.Credential;
 import org.apache.ibatis.annotations.*;
 
+import java.util.List;
+
 @Mapper
 public interface CredentialMapper {
-    @Select("SELECT * FROM CREDENTIALS WHERE url = #{url}")
-    Credential getCredential(String url);
+    @Select("SELECT * FROM CREDENTIALS")
+    List<Credential> getAll();
 
-    @Insert("INSERT INTO CREDENTIALS (url, username, password, userid) " +
-            "VALUES(#{url}, #{username}, #{password}, #{userId})")
+    @Select("SELECT * FROM CREDENTIALS WHERE credentialid = #{credentialId}")
+    Credential getCredential(String credentialId);
+
+    @Insert("INSERT INTO CREDENTIALS (url, username, key, password, userid) " +
+            "VALUES(#{url}, #{username}, #{key}, #{password}, #{userId})")
     @Options(useGeneratedKeys = true, keyProperty = "credentialId")
     int createCredential(Credential credential);
 
-    @Delete("DELETE FROM CREDENTIALS WHERE url = #{url}")
-    void deleteCredential(String url);
+    @Delete("DELETE FROM CREDENTIALS WHERE credentialid = #{credentialId}")
+    void deleteCredential(String credentialId);
 
-    @Update("UPDATE credential set url = #{url}, username = #{username}, " +
-            "password = #{password}, userid = #{userid}") //will userid change, though?
+    @Update("UPDATE CREDENTIALS set url = #{url}, username = #{username}, " +
+            "password = #{password} WHERE credentialid = #{credentialId}")
     void updateCredential(Credential credential);
 
 }

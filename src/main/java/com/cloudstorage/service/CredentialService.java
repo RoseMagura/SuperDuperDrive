@@ -4,6 +4,8 @@ import org.springframework.stereotype.Service;
 import com.cloudstorage.model.Credential;
 import com.cloudstorage.mapper.CredentialMapper;
 
+import java.util.List;
+
 @Service
 public class CredentialService {
     private final CredentialMapper credentialMapper;
@@ -12,13 +14,15 @@ public class CredentialService {
         this.credentialMapper = credentialMapper;
     }
 
-    // public int createCredential(Credential credential) { return credentialMapper.insert(credential);}
+    public List<Credential> getAll(){return credentialMapper.getAll();}
 
-//    // password displayed as encrypted and then option to show?
+     public int createCredential(Credential credential) { return credentialMapper.createCredential(credential);}
 
-    // public Credential getCredential(String credentialId){ return credentialMapper.getCredential(credentialId);}
+    // password displayed as encrypted and then option to show?
 
-    // public Credential editCredential() {}
+     public Credential getCredential(String credentialId){ return credentialMapper.getCredential(credentialId);}
 
-    // public void deleteCredential(String credentialId) {userMapper.deleteCredential(credentialId);}
+     public void editCredential(Credential credential) {credentialMapper.updateCredential(credential);}
+
+     public void deleteCredential(String credentialId) {credentialMapper.deleteCredential(credentialId);}
 }
