@@ -7,6 +7,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.ModelAndView;
 import org.springframework.web.servlet.view.RedirectView;
 
@@ -35,10 +36,10 @@ public class HomeController {
 
     @GetMapping
     public String getHomePage(Model model) {
-//        ModelAndView modelAndView = new ModelAndView();
         // get values stored in database
         model.addAttribute("notes", this.noteService.getAll());
-//        model.addAttribute("files", this.fileService.getAll());
+        model.addAttribute("files", this.fileService.getAll());
+        System.out.println(this.fileService.getAll());
         model.addAttribute("credentials", this.credentialService.getAll());
         model.addAttribute("encryptionService", encryptionService);
         return "home";
@@ -47,9 +48,7 @@ public class HomeController {
     public String postOrEditCredential(Authentication authentication, Credential credential, Model model) {
         User currentUser =  this.userService.getUser(authentication.getName());
         credential.setUserId(currentUser.getUserId());
-//        System.out.println(credential.getPassword());
         credential.setKey(currentUser.getSalt());
-//        System.out.println(credential.getKey());
 
         if (credential.getCredentialId() == 0) {
             try{
@@ -63,7 +62,6 @@ public class HomeController {
         } else{
             try{
                 credential.setPassword(this.encryptionService.encryptValue(credential.getPassword(), currentUser.getSalt()));
-//                System.out.println(credential.getPassword());
                 credentialService.editCredential(credential);}
             catch (Exception e){System.out.println("Cause: " + e.getCause() + ". Message: " + e.getMessage());}
         }
@@ -96,44 +94,37 @@ public class HomeController {
         model.addAttribute("notes", this.noteService.getAll());
         return "redirect:/result";
     }
-//    @PostMapping
-
-
     @PostMapping(value = "/delete/credential/{id}")
     public String deleteCredential(@PathVariable String id, Model model) {
         try{this.credentialService.deleteCredential(id);}
         catch (Exception e){System.out.println("Cause: " + e.getCause() + ". Message: " + e.getMessage());}
         model.addAttribute("credentials", this.credentialService.getAll());
-        return "redirect:/result";
+        return "redirect:/result";}
 
-        //FILES
-//        @PostMapping
-//        public String postOrEditFile(Authentication authentication, File file, Model model) {
-//            User currentUser =  this.userService.getUser(authentication.getName());
-//            // may need to edit this line
+        @PostMapping(value = "/file/new")
+        public String uploadFile(@RequestParam("fileUpload") MultipartFile fileUpload, Authentication authentication, Model model) throws IOException {
+            User currentUser =  this.userService.getUser(authentication.getName());
 //            file.setUserId(currentUser.getUserId());
 //            if (file.getFileId() == 0) {
 //                try{
-//                    // need to edit this line
-//                    fileService.createFile(new File(null, file.getFileTitle(),
-//                            file.getFileDescription(), file.getUserId()));
-//
+            File file = new File(null, fileUpload.getOriginalFilename(),fileUpload.getContentType(), (int) fileUpload.getSize(), currentUser.getUserId(), fileUpload.getBytes());
+            this.fileService.createFile(file);
 //                }
 //                catch (Exception e){System.out.println("Cause: " + e.getCause() + ". Message: " + e.getMessage());}
 //            } else{
 //                try{ fileService.editFile(file);}
 //                catch (Exception e){System.out.println("Cause: " + e.getCause() + ". Message: " + e.getMessage());}
 //            }
-//            model.addAttribute("files", this.fileService.getAll());
-//            return "home";
-//        }
-//
-//        @PostMapping(value = "/delete/{id}")
-//        public String deleteFile(@PathVariable String id, Model model) {
-//            try{this.fileService.deleteFile(id);}
-//            catch (Exception e){System.out.println("Cause: " + e.getCause() + ". Message: " + e.getMessage());}
-//            model.addAttribute("files", this.fileService.getAll());
-//            return "result";
-//        }
+            model.addAttribute("files", this.fileService.getAll());
+            return "redirect:/result";
+        }
+
+        @PostMapping(value = "/delete/file/{id}")
+        public String deleteFile(@PathVariable String id, Model model) {
+            try{this.fileService.deleteFile(id);}
+            catch (Exception e){System.out.println("Cause: " + e.getCause() + ". Message: " + e.getMessage());}
+            model.addAttribute("files", this.fileService.getAll());
+            return "redirect:/result";
+        }
     }
-}
+
