@@ -34,29 +34,39 @@ public class HomeController {
     }
 
     @GetMapping
-    public ModelAndView getHomePage(Model model, Authentication authentication) {
-        ModelAndView modelAndView = new ModelAndView();
+    public String getHomePage(Model model) {
+//        ModelAndView modelAndView = new ModelAndView();
         // get values stored in database
-        modelAndView.addObject("notes", this.noteService.getAll());
-//        modelAndView.addObject("files", this.fileService.getAll());
-        modelAndView.addObject("credentials", this.credentialService.getAll());
-        return modelAndView;
+        model.addAttribute("notes", this.noteService.getAll());
+//        model.addAttribute("files", this.fileService.getAll());
+        model.addAttribute("credentials", this.credentialService.getAll());
+        model.addAttribute("encryptionService", encryptionService);
+        return "home";
     }
     @PostMapping(value = "/credential/new")
     public String postOrEditCredential(Authentication authentication, Credential credential, Model model) {
         User currentUser =  this.userService.getUser(authentication.getName());
         credential.setUserId(currentUser.getUserId());
-//        if (credential.getCredentialId() == 0 || credential.getCredentialId() == null) {
-//            try{
+//        System.out.println(credential.getPassword());
+        credential.setKey(currentUser.getSalt());
+//        System.out.println(credential.getKey());
+
+        if (credential.getCredentialId() == 0) {
+            try{
                 credentialService.createCredential(new Credential(null, credential.getUrl(),
                         credential.getUsername(), currentUser.getSalt(), this.encryptionService.encryptValue(credential.getPassword(), currentUser.getSalt()),
                         credential.getUserId()));
-//            }
-//            catch (Exception e){System.out.println("Cause: " + e.getCause() + ". Message: " + e.getMessage());}
-//        } else{
-//            try{ credentialService.editCredential(credential);}
-//            catch (Exception e){System.out.println("Cause: " + e.getCause() + ". Message: " + e.getMessage());}
-//        }
+
+
+            }
+            catch (Exception e){System.out.println("Cause: " + e.getCause() + ". Message: " + e.getMessage());}
+        } else{
+            try{
+                credential.setPassword(this.encryptionService.encryptValue(credential.getPassword(), currentUser.getSalt()));
+//                System.out.println(credential.getPassword());
+                credentialService.editCredential(credential);}
+            catch (Exception e){System.out.println("Cause: " + e.getCause() + ". Message: " + e.getMessage());}
+        }
         model.addAttribute("credentials", this.credentialService.getAll());
         return "redirect:/result";
     }

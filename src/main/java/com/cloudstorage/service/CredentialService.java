@@ -9,16 +9,25 @@ import java.util.List;
 @Service
 public class CredentialService {
     private final CredentialMapper credentialMapper;
+    private EncryptionService encryptionService;
 
-    public CredentialService(CredentialMapper credentialMapper) {
+    public CredentialService(CredentialMapper credentialMapper, EncryptionService encryptionService) {
         this.credentialMapper = credentialMapper;
+        this.encryptionService = encryptionService;
     }
 
     public List<Credential> getAll(){return credentialMapper.getAll();}
 
      public int createCredential(Credential credential) { return credentialMapper.createCredential(credential);}
 
-    // password displayed as encrypted and then option to show?
+    // password displayed as encrypted and then option to show
+//    public String decryptPassword(Credential credential) {
+//        String encryptedPassword = credential.getPassword();
+//        String unencryptedPassword = this.encryptionService.decryptValue(encryptedPassword, credential.getKey());
+//        System.out.println(unencryptedPassword);
+//        credential.setPassword(unencryptedPassword);
+//        return credential.getPassword();
+//    }
 
      public Credential getCredential(String credentialId){ return credentialMapper.getCredential(credentialId);}
 

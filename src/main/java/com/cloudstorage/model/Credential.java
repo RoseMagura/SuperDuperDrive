@@ -1,5 +1,8 @@
 package com.cloudstorage.model;
 
+import com.cloudstorage.service.EncryptionService;
+import org.springframework.beans.factory.annotation.Autowired;
+
 public class Credential {
     private Integer credentialId;
     private String url;
@@ -7,6 +10,8 @@ public class Credential {
     private String key;
     private String password;
     private Integer userId;
+    @Autowired
+    private EncryptionService encryptionService;
 
     public Credential(Integer credentialId, String url, String username, String key, String password, Integer userId){
         this.credentialId = credentialId;
@@ -69,4 +74,10 @@ public class Credential {
     public void setPassword(String password) {
         this.password = password;
     }
+
+//    public String encryptPassword
+//    public String decryptPassword(String data, String key) {
+//        System.out.println(this.encryptionService.decryptValue(data, key));
+//        return encryptionService.decryptValue(data, key);
+//    }
 }
