@@ -11,8 +11,8 @@
     <body class="p-3 mb-2 bg-light text-black">
         <div class="container">
             <div id="logoutDiv">
-                <form action="#" th:action="@{/appLogout}" method="POST">
-                    <button type="submit" class="btn btn-secondary float-right" value="Logout">Logout</button>
+                <form action="#" th:action="@{/logout}" method="POST">
+                    <button type="submit" class="btn btn-secondary float-right" value="logout">Logout</button>
                 </form>
             </div>
             <div id="contentDiv" style="clear: right;">
@@ -51,10 +51,6 @@
                                 <tbody>
                                 <tr th:each="file : ${files}">
                                     <td>
-<!--                                        <form action="#" th:action="@{'home/download/{id}'(id=${file.fileId})}" th:method="POST">-->
-<!--                                            <input type="hidden" name="_method" value="download" />-->
-<!--                                            <button type="submit" id="fileDownloadButton" class="btn btn-success">View</button>-->
-<!--                                        </form>-->
                                         <a target="_blank" class="btn btn-success" th:href="@{home/download(id=${file.fileId})}">View</a>
                                         <form action="#" th:action="@{'home/file/{id}/delete'(id=${file.fileId})}" th:method="POST">
                                             <input type="hidden" name="_method" value="delete" />

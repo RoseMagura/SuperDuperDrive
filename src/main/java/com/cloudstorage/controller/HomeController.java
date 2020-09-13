@@ -116,11 +116,28 @@ public class HomeController {
 
         @PostMapping(value = "/file/new")
         public String uploadFile(@RequestParam("fileUpload") MultipartFile fileUpload, Authentication authentication, Model model) throws IOException {
-            User currentUser =  this.userService.getUser(authentication.getName());
-            File file = new File(null, fileUpload.getOriginalFilename(),fileUpload.getContentType(), (int) fileUpload.getSize(), currentUser.getUserId(), fileUpload.getBytes());
-            this.fileService.createFile(file);
-            model.addAttribute("files", this.fileService.getAll());
-            return "redirect:/result";
+            String uploadError = null;
+            if (!fileService.isFilenameAvailable(fileUpload.getOriginalFilename())) {
+                uploadError = "The filename already exists.";
+            }
+            if (uploadError == null) {
+                User currentUser =  this.userService.getUser(authentication.getName());
+                File file = new File(null, fileUpload.getOriginalFilename(),fileUpload.getContentType(), (int) fileUpload.getSize(), currentUser.getUserId(), fileUpload.getBytes());
+                int rowsAdded = this.fileService.createFile(file);
+                if (rowsAdded < 0) {
+                    uploadError = "There was an error uploading the file. Please try again.";
+                }
+            }
+
+            if (uploadError == null) {
+                model.addAttribute("uploadSuccess", true);
+                model.addAttribute("files", this.fileService.getAll());
+                return "redirect:/result";
+            } else {
+                model.addAttribute("uploadError", uploadError);
+                return "redirect:/result?error";
+            }
+
         }
 
         @PostMapping(value = "/file/{id}/delete")

@@ -26,4 +26,9 @@ public class FileService {
      public void editFile(File file) { fileMapper.updateFile(file); }
 
      public void deleteFile(String fileId) {fileMapper.deleteFile(fileId);}
+
+    public boolean isFilenameAvailable(String filename) {
+        return fileMapper.getFileByName(filename) == null;
+    }
+
 }
