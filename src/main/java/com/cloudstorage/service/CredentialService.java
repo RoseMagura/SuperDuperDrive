@@ -20,14 +20,7 @@ public class CredentialService {
 
      public int createCredential(Credential credential) { return credentialMapper.createCredential(credential);}
 
-    // password displayed as encrypted and then option to show
-//    public String decryptPassword(Credential credential) {
-//        String encryptedPassword = credential.getPassword();
-//        String unencryptedPassword = this.encryptionService.decryptValue(encryptedPassword, credential.getKey());
-//        System.out.println(unencryptedPassword);
-//        credential.setPassword(unencryptedPassword);
-//        return credential.getPassword();
-//    }
+    public List<Credential> getForUser(Integer userId) { return credentialMapper.getAllByUser(userId);}
 
      public Credential getCredential(String credentialId){ return credentialMapper.getCredential(credentialId);}
 

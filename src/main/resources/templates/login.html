@@ -15,9 +15,6 @@
                 You have been logged out
             </div>
             <form action="#" th:action="@{/login}" method="POST">
-<!--                <div class="alert alert-dark" th:if="${signupSuccess}">-->
-<!--                    You successfully signed up! Please login.-->
-<!--                </div>-->
                 <div class="alert alert-danger" th:if="${param.error}">
                     Invalid username or password
                 </div>

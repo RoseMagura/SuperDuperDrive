@@ -23,7 +23,9 @@ public class FileService {
 
      public List<File> getAll() { return fileMapper.getAll();}
 
-     public void editFile(File file) { fileMapper.updateFile(file); }
+    public List<File> getForUser(Integer userId) { return fileMapper.getAllByUser(userId);}
+
+    public void editFile(File file) { fileMapper.updateFile(file); }
 
      public void deleteFile(String fileId) {fileMapper.deleteFile(fileId);}
 

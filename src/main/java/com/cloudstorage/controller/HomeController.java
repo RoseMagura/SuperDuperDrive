@@ -39,12 +39,11 @@ public class HomeController {
     }
 
     @GetMapping
-    public String getHomePage(Model model) {
+    public String getHomePage(Model model, Authentication authentication) {
         // get values stored in database
-        model.addAttribute("notes", this.noteService.getAll());
-        model.addAttribute("files", this.fileService.getAll());
-//        System.out.println(this.fileService.getAll());
-        model.addAttribute("credentials", this.credentialService.getAll());
+        model.addAttribute("notes", this.noteService.getForUser(this.userService.getUser(authentication.getName()).getUserId()));
+        model.addAttribute("files", this.fileService.getForUser(this.userService.getUser(authentication.getName()).getUserId()));
+        model.addAttribute("credentials", this.credentialService.getForUser(this.userService.getUser(authentication.getName()).getUserId()));
         model.addAttribute("encryptionService", encryptionService);
         return "home";
     }
@@ -68,18 +67,24 @@ public class HomeController {
                 credentialService.createCredential(new Credential(null, credential.getUrl(),
                         credential.getUsername(), currentUser.getSalt(), this.encryptionService.encryptValue(credential.getPassword(), currentUser.getSalt()),
                         credential.getUserId()));
-
-
+                model.addAttribute("credentials", this.credentialService.getAll());
+                return "redirect:/result";
             }
-            catch (Exception e){System.out.println("Cause: " + e.getCause() + ". Message: " + e.getMessage());}
+            catch (Exception e){
+                System.out.println("Cause: " + e.getCause() + ". Message: " + e.getMessage());
+                return "redirect:/result?error";
+            }
         } else{
             try{
                 credential.setPassword(this.encryptionService.encryptValue(credential.getPassword(), currentUser.getSalt()));
-                credentialService.editCredential(credential);}
-            catch (Exception e){System.out.println("Cause: " + e.getCause() + ". Message: " + e.getMessage());}
+                credentialService.editCredential(credential);
+                model.addAttribute("credentials", this.credentialService.getAll());
+                return "redirect:/result";}
+            catch (Exception e){System.out.println("Cause: " + e.getCause() + ". Message: " + e.getMessage());
+                return "redirect:/result?error";
+            }
         }
-        model.addAttribute("credentials", this.credentialService.getAll());
-        return "redirect:/result";
+
     }
     @PostMapping(value = "/note/new")
     public String postOrEditNote(Authentication authentication, Note note, Model model) {
@@ -89,28 +94,39 @@ public class HomeController {
             try{
                 noteService.createNote(new Note(null, note.getNoteTitle(),
                     note.getNoteDescription(), note.getUserId()));
-
+                model.addAttribute("notes", this.noteService.getAll());
+                return "redirect:/result";
             }
-            catch (Exception e){System.out.println("Cause: " + e.getCause() + ". Message: " + e.getMessage());}
+            catch (Exception e){System.out.println("Cause: " + e.getCause() + ". Message: " + e.getMessage());
+                return "redirect:/result?error";
+            }
         } else{
-            try{ noteService.editNote(note);}
-            catch (Exception e){System.out.println("Cause: " + e.getCause() + ". Message: " + e.getMessage());}
+            try{ noteService.editNote(note);
+                model.addAttribute("notes", this.noteService.getAll());
+                return "redirect:/result";}
+            catch (Exception e){System.out.println("Cause: " + e.getCause() + ". Message: " + e.getMessage());
+                return "redirect:/result?error";
+            }
         }
-        model.addAttribute("notes", this.noteService.getAll());
-        return "redirect:/result";
+
     }
 
     @PostMapping(value = "/note/{id}/delete")
     public String deleteNote(@PathVariable String id, Model model) {
         try{this.noteService.deleteNote(id);}
-        catch (Exception e){System.out.println("Cause: " + e.getCause() + ". Message: " + e.getMessage());}
+        catch (Exception e){System.out.println("Cause: " + e.getCause() + ". Message: " + e.getMessage());
+            return "redirect:/result?error";
+        }
         model.addAttribute("notes", this.noteService.getAll());
         return "redirect:/result";
     }
     @PostMapping(value = "/credential/{id}/delete")
     public String deleteCredential(@PathVariable String id, Model model) {
         try{this.credentialService.deleteCredential(id);}
-        catch (Exception e){System.out.println("Cause: " + e.getCause() + ". Message: " + e.getMessage());}
+        catch (Exception e){
+            System.out.println("Cause: " + e.getCause() + ". Message: " + e.getMessage());
+            return "redirect:/result?error";
+        }
         model.addAttribute("credentials", this.credentialService.getAll());
         return "redirect:/result";}
 
@@ -122,6 +138,9 @@ public class HomeController {
             }
             if (uploadError == null) {
                 User currentUser =  this.userService.getUser(authentication.getName());
+//                if(fileUpload.getSize() > 131072){
+//                    System.out.println("File size is too large");
+//                    return "redirect:result?error";}
                 File file = new File(null, fileUpload.getOriginalFilename(),fileUpload.getContentType(), (int) fileUpload.getSize(), currentUser.getUserId(), fileUpload.getBytes());
                 int rowsAdded = this.fileService.createFile(file);
                 if (rowsAdded < 0) {
@@ -137,28 +156,17 @@ public class HomeController {
                 model.addAttribute("uploadError", uploadError);
                 return "redirect:/result?error";
             }
-
         }
 
         @PostMapping(value = "/file/{id}/delete")
         public String deleteFile(@PathVariable String id, Model model) {
             try{this.fileService.deleteFile(id);}
-            catch (Exception e){System.out.println("Cause: " + e.getCause() + ". Message: " + e.getMessage());}
+            catch (Exception e){
+                System.out.println("Cause: " + e.getCause() + ". Message: " + e.getMessage());
+                return "redirect:/result?error";
+            }
             model.addAttribute("files", this.fileService.getAll());
             return "redirect:/result";
         }
-
-
-
-//        @PostMapping("/home/download/{id}")
-//        public String downloadFile(@PathVariable String id) {
-//            File file = fileService.getFile(id);
-//            System.out.println(file.toString());
-////            return ResponseEntity.ok()
-////                    .contentType(MediaType.parseMediaType(file.getContentType()))
-////                    .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\""
-////                            + file.getFilename() + "\"").body(file.getFileData());
-//            return "redirect:/result";
-//    }
     }
 
