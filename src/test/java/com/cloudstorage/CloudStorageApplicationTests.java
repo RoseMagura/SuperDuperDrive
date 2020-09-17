@@ -72,18 +72,33 @@ class CloudStorageApplicationTests {
 	}
 	public void fillForm(String text, String field, WebDriver driver){
 		WebElement input = driver.findElement(By.id(field));
-		new WebDriverWait(driver, 5).until(ExpectedConditions.visibilityOf(input)).sendKeys(text);
+		new WebDriverWait(driver, 5).until(ExpectedConditions.visibilityOf(input)).clear();
+		input.sendKeys(text);
 	}
 	public void accessTab(String name) throws InterruptedException {
 		JavascriptExecutor jse = (JavascriptExecutor) driver;
-		WebElement tab = (new WebDriverWait(driver, 30))
+//		System.out.println(driver.getTitle());
+		if(!driver.getTitle().equals("Home")){
+//			System.out.println("not yet");
+			Thread.sleep(2000);
+//			System.out.println(driver.getCurrentUrl());
+			WebElement tab = (new WebDriverWait(driver, 30))
+					.until(ExpectedConditions.presenceOfElementLocated(By.id(name)));
+			jse.executeScript("arguments[0].click()", tab);
+		}
+		else{
+//			System.out.println("Ready");
+//			System.out.println(driver.getCurrentUrl());
+
+			WebElement tab = (new WebDriverWait(driver, 30))
 				.until(ExpectedConditions.presenceOfElementLocated(By.id(name)));
 //				driver.findElement(By.id(name));
-		jse.executeScript("arguments[0].click()", tab);
+			jse.executeScript("arguments[0].click()", tab);
+		}
 	}
 	public void setupNote(WebDriver driver) throws InterruptedException {
 //		 return noteService.createNote(new Note(null, "a", "b", userId));
-		loginMethod();
+//		loginMethod();
 		accessTab("nav-notes-tab");
 		WebElement newNoteButton = driver.findElement(By.id("create-note"));
 		new WebDriverWait(driver, 5).until(ExpectedConditions.elementToBeClickable(newNoteButton)).click();
@@ -108,11 +123,9 @@ class CloudStorageApplicationTests {
 		return Base64.getEncoder().encodeToString(encryptedValue);
 	}
 	public static boolean searchForId(String id, WebDriver driver) throws InterruptedException {
-//		boolean match = false;
 		List<WebElement> rows = driver.findElements(By.tagName("tr"));
 		Thread.sleep(5000);
 		for (WebElement row: rows) {
-//			System.out.println(row.getAttribute("id"));
 			if(row.getAttribute("id").equals(id)){
 				return true;
 			}
@@ -122,14 +135,16 @@ class CloudStorageApplicationTests {
 	public void returnHome(WebDriver driver) throws InterruptedException {
 		WebElement link = (new WebDriverWait(driver, 10))
 				.until(ExpectedConditions.presenceOfElementLocated(By.tagName("a")));
-		System.out.println(link.getAttribute("href"));
-		System.out.println(link.getAttribute("innerHTML"));
-//		System.out.println("before click");
-//		link.click();
 		link.sendKeys(Keys.ENTER);
 //		Thread.sleep(2000);
-//		System.out.println("after click");
-//		new WebDriverWait(driver, 20).until(ExpectedConditions.visibilityOf(link)).click();
+	}
+	public void checkNumber(String type) throws InterruptedException {
+		List<WebElement> buttons = driver.findElements(By.id(type));
+		Thread.sleep(5000);
+		if(buttons.size() <1){
+			setupNote(driver);
+			returnHome(driver);
+		}
 	}
 //	@Test
 //	public void getLoginPage() {
@@ -160,71 +175,57 @@ class CloudStorageApplicationTests {
 //		Assertions.assertEquals("Login", driver.getTitle());
 //	}
 
-//	@Test
-//	public void createNote() throws InterruptedException {
+	@Test
+	public void createNote() throws InterruptedException {
+		loginMethod();
+		setupNote(driver);
+		Assertions.assertEquals("Result", driver.getTitle());
+		Assertions.assertEquals("Success", driver.findElement(By.className("display-5")).getText());
+		returnHome(driver);
+		accessTab("nav-notes-tab");
+		WebElement title = driver.findElement(By.id("To-Do List"));
+		Assertions.assertEquals("To-Do List",title.getAttribute("innerHTML"));
+		WebElement description = driver.findElement(By.id("1. Walk Dog. 2.Study Java"));
+		Assertions.assertEquals("1. Walk Dog. 2.Study Java",description.getAttribute("innerHTML"));
+	}
+
+	@Test
+	public void editNote() throws InterruptedException {
+		loginMethod();
+		accessTab("nav-notes-tab");
+		checkNumber("edit-note");
+		accessTab("nav-notes-tab");
+		WebElement editNoteButton = driver.findElement(By.id("edit-note"));
+		new WebDriverWait(driver, 10).until(ExpectedConditions.elementToBeClickable(editNoteButton)).click();
+		fillForm("Goals", "note-title", driver);
+		fillForm("1. Exercise everyday.", "note-description", driver);
+		WebElement submitButton = driver.findElement(By.id("save-changes"));
+		submitButton.click();
+		Assertions.assertEquals("Result", driver.getTitle());
+		Assertions.assertEquals("Success", driver.findElement(By.className("display-5")).getText());
+		returnHome(driver);
+		accessTab("nav-notes-tab");
+		Assertions.assertEquals("Goals", driver.findElement(By.id("Goals")).getAttribute("innerHTML"));
+		Assertions.assertEquals("1. Exercise everyday.", driver.findElement(By.id("1. Exercise everyday.")).getAttribute("innerHTML"));
+	}
+
+	@Test
+	public void deleteNote() throws InterruptedException {
+		loginMethod();
 //		setupNote(driver);
-//		Assertions.assertEquals("Result", driver.getTitle());
-//		Assertions.assertEquals("Success", driver.findElement(By.className("display-5")).getText());
 //		returnHome(driver);
-////		WebElement tab = driver.findElement(By.id("nav-notes-tab"));
-//////		Thread.sleep(5000);
-////		new WebDriverWait(driver, 20).until(ExpectedConditions.visibilityOf(tab)).click();
-//		accessTab("nav-notes-tab");
-//		WebElement title = driver.findElement(By.id("To-Do List"));
-//		Assertions.assertEquals("To-Do List",title.getAttribute("innerHTML"));
-//		WebElement description = driver.findElement(By.id("1. Walk Dog. 2.Study Java"));
-//		Assertions.assertEquals("1. Walk Dog. 2.Study Java",description.getAttribute("innerHTML"));
-//	}
-//
-//	@Test
-//	public void editNote() throws InterruptedException {
-//		loginMethod();
-//		setupNote(driver);
-//		accessTab("nav-notes-tab");
-//		WebElement editNoteButton = driver.findElement(By.id("edit-note"));
-////		Thread.sleep(5000);
-//		new WebDriverWait(driver, 10).until(ExpectedConditions.elementToBeClickable(editNoteButton)).click();
-//		fillForm(" Cont.", "note-title", driver);
-//		fillForm(" 3. Workout.", "note-description", driver);
-//		WebElement submitButton = driver.findElement(By.id("save-changes"));
-//		submitButton.click();
-//		Assertions.assertEquals("Result", driver.getTitle());
-//		Assertions.assertEquals("Success", driver.findElement(By.className("display-5")).getText());
-//		returnHome(driver);
-////		WebElement link = driver.findElement(By.tagName("a"));
-////		Thread.sleep(5000);
-////		new WebDriverWait(driver, 10).until(ExpectedConditions.visibilityOf(link)).click();
-////		Thread.sleep(5000);
-////		WebElement tab = driver.findElement(By.id("nav-notes-tab"));
-////		Thread.sleep(10000);
-////		new WebDriverWait(driver, 10).until(ExpectedConditions.visibilityOf(tab)).click();
-////		Thread.sleep(5000);
-//		accessTab("nav-notes-tab");
-//		Assertions.assertEquals("To-Do List Cont.", driver.findElement(By.id("To-Do List Cont.")).getAttribute("innerHTML"));
-//		Assertions.assertEquals("1. Walk Dog. 2.Study Java 3. Workout.", driver.findElement(By.id("1. Walk Dog. 2.Study Java 3. Workout.")).getAttribute("innerHTML"));
-//	}
-//
-//	@Test
-//	public void deleteNote() throws InterruptedException {
-//		loginMethod();
-//		accessTab("nav-notes-tab");
-//		WebElement deleteNoteButton = driver.findElement(By.id("delete-note"));
-//		String id = deleteNoteButton.getAttribute("value");
-//		new WebDriverWait(driver, 5).until(ExpectedConditions.elementToBeClickable(deleteNoteButton)).click();
-//		Assertions.assertEquals("Result", driver.getTitle());
-//		Assertions.assertEquals("Success", driver.findElement(By.className("display-5")).getText());
-//		returnHome(driver);
-////		WebElement link = driver.findElement(By.tagName("a"));
-////		new WebDriverWait(driver, 10).until(ExpectedConditions.visibilityOf(link)).click();
-////		Thread.sleep(5000);
-////		System.out.println("OK");
-////		WebElement tab = driver.findElement(By.id("nav-notes-tab"));
-////		Thread.sleep(5000);
-////		System.out.println("OK 2");
-////		new WebDriverWait(driver, 10).until(ExpectedConditions.visibilityOf(tab)).click();
-//		accessTab("nav-notes-tab");
-//		Assertions.assertFalse(searchForId(id, driver));
-//	}
+		accessTab("nav-notes-tab");
+		checkNumber("delete-note");
+		accessTab("nav-notes-tab");
+		WebElement deleteNoteButton = driver.findElement(By.id("delete-note"));
+		String id = deleteNoteButton.getAttribute("value");
+		new WebDriverWait(driver, 5).until(ExpectedConditions.elementToBeClickable(deleteNoteButton)).click();
+		Assertions.assertEquals("Result", driver.getTitle());
+		Assertions.assertEquals("Success", driver.findElement(By.className("display-5")).getText());
+		returnHome(driver);
+		accessTab("nav-notes-tab");
+		Assertions.assertFalse(searchForId(id, driver));
+	}
 
 	@Test
 	public void createCredential() throws InterruptedException {
@@ -240,11 +241,6 @@ class CloudStorageApplicationTests {
 			Assertions.assertEquals("Result", driver.getTitle());
 			Assertions.assertEquals("Success", driver.findElement(By.className("display-5")).getText());
 			returnHome(driver);
-//			WebElement link = driver.findElement(By.tagName("a"));
-//			new WebDriverWait(driver, 10).until(ExpectedConditions.visibilityOf(link)).click();
-//			WebElement tab = driver.findElement(By.id("nav-credentials-tab"));
-//			Thread.sleep(5000);
-//			new WebDriverWait(driver, 20).until(ExpectedConditions.visibilityOf(tab)).click();
 			accessTab("nav-credentials-tab");
 			WebElement url = driver.findElement(By.id("www.msn.com/"));
 			Assertions.assertEquals("www.msn.com/",url.getAttribute("innerHTML"));
@@ -266,40 +262,28 @@ class CloudStorageApplicationTests {
 		Assertions.assertEquals("Result", driver.getTitle());
 		Assertions.assertEquals("Success", driver.findElement(By.className("display-5")).getText());
 		returnHome(driver);
-//		WebElement link = driver.findElement(By.tagName("a"));
-//		new WebDriverWait(driver, 10).until(ExpectedConditions.visibilityOf(link)).click();
-//		Thread.sleep(5000);
-//		System.out.println("OK");
-//		WebElement tab = driver.findElement(By.id("nav-credentials-tab"));
-//		Thread.sleep(5000);
-//		System.out.println("OK 2");
-//		new WebDriverWait(driver, 20).until(ExpectedConditions.visibilityOf(tab)).click();
 		accessTab("nav-credentials-tab");
 		Assertions.assertFalse(searchForId(id, driver));
 	}
 
-//	@Test
-//	public void editCredential() throws InterruptedException {
-//		loginMethod();
-//		accessTab("nav-credentials-tab");
-//		WebElement editCredentialButton = driver.findElement(By.id("edit-credential"));
-//		new WebDriverWait(driver, 5).until(ExpectedConditions.elementToBeClickable(editCredentialButton)).click();
-//		String id = editCredentialButton.getAttribute("value");
-//		fillForm("email", "credential-url", driver);
-//		fillForm("**", "credential-username", driver);
-//		fillForm("__", "credential-password", driver);
-//		WebElement submitButton = driver.findElement(By.id("save-credential"));
-//		submitButton.click();
-//		Assertions.assertEquals("Result", driver.getTitle());
-//		Assertions.assertEquals("Success", driver.findElement(By.className("display-5")).getText());
-//		WebElement link = driver.findElement(By.tagName("a"));
-//		new WebDriverWait(driver, 10).until(ExpectedConditions.visibilityOf(link)).click();
-//		WebElement tab = driver.findElement(By.id("nav-credentials-tab"));
-//		new WebDriverWait(driver, 10).until(ExpectedConditions.visibilityOf(tab)).click();
-////		System.out.println(driver.findElement(By.id(id)).getAttribute("innerHTML"));
-//		Assertions.assertEquals("www.msn.com/email", driver.findElement(By.id("www.msn.com/email")).getAttribute("innerHTML"));
-//		Assertions.assertEquals("jjabrams**", driver.findElement(By.id("jjabrams**")).getAttribute("innerHTML"));
-//		Assertions.assertEquals("7WOb+UTwRWiN7cCHlf2gow==", driver.findElement(By.id("7WOb+UTwRWiN7cCHlf2gow==")).getAttribute("innerHTML"));
-//	}
+	@Test
+	public void editCredential() throws InterruptedException {
+		loginMethod();
+		accessTab("nav-credentials-tab");
+		WebElement editCredentialButton = driver.findElement(By.id("edit-credential"));
+		new WebDriverWait(driver, 5).until(ExpectedConditions.elementToBeClickable(editCredentialButton)).click();
+		String id = editCredentialButton.getAttribute("value");
+		fillForm("email", "credential-url", driver);
+		fillForm("**", "credential-username", driver);
+		fillForm("__", "credential-password", driver);
+		WebElement submitButton = driver.findElement(By.id("save-credential"));
+		submitButton.click();
+		Assertions.assertEquals("Result", driver.getTitle());
+		Assertions.assertEquals("Success", driver.findElement(By.className("display-5")).getText());
+		returnHome(driver);
+		Assertions.assertEquals("www.msn.com/email", driver.findElement(By.id("www.msn.com/email")).getAttribute("innerHTML"));
+		Assertions.assertEquals("jjabrams**", driver.findElement(By.id("jjabrams**")).getAttribute("innerHTML"));
+		Assertions.assertEquals("7WOb+UTwRWiN7cCHlf2gow==", driver.findElement(By.id("7WOb+UTwRWiN7cCHlf2gow==")).getAttribute("innerHTML"));
+	}
 
 }

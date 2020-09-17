@@ -960,3 +960,9 @@ Caused by: java.lang.IllegalStateException: The file is locked: nio:C:/Users/mag
 	at org.h2.mvstore.FileStore.open(FileStore.java:172)
 	at org.h2.mvstore.MVStore.<init>(MVStore.java:381)
 	... 102 more
+2020-09-17 15:34:46 jdbc[13]: exception
+org.h2.jdbc.JdbcSQLSyntaxErrorException: Syntax error in SQL statement "DELETE *[*] FROM NOTES"; expected "identifier"; SQL statement:
+delete * from notes [42001-200]
+2020-09-17 15:36:51 jdbc[13]: exception
+org.h2.jdbc.JdbcSQLSyntaxErrorException: Syntax error in SQL statement "DELETE *[*] FROM NOTES"; expected "identifier"; SQL statement:
+delete * from notes [42001-200]
