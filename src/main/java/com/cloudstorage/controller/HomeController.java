@@ -2,22 +2,14 @@ package com.cloudstorage.controller;
 
 import com.cloudstorage.service.*;
 import com.cloudstorage.model.*;
-import org.apache.tomcat.util.http.parser.Authorization;
 import org.springframework.http.HttpHeaders;
-import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
-import org.springframework.web.servlet.ModelAndView;
-import org.springframework.web.servlet.view.RedirectView;
-
 import java.io.IOException;
-import java.io.InputStream;
-import java.util.List;
-import java.util.logging.Logger;
 
 @Controller
 @RequestMapping("/home")
@@ -83,8 +75,8 @@ public class HomeController {
                 return "redirect:/result?error";
             }
         }
-
     }
+
     @PostMapping(value = "/note/new")
     public String postOrEditNote(Authentication authentication, Note note, Model model) {
         User currentUser =  this.userService.getUser(authentication.getName());
@@ -107,7 +99,6 @@ public class HomeController {
                 return "redirect:/result?error";
             }
         }
-
     }
 
     @PostMapping(value = "/note/{id}/delete")
