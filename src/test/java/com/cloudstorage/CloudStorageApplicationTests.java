@@ -2,9 +2,11 @@ package com.cloudstorage;
 
 import com.cloudstorage.model.Note;
 import io.github.bonigarcia.wdm.WebDriverManager;
+import org.apache.commons.lang3.RandomStringUtils;
 import org.junit.jupiter.api.*;
 import org.openqa.selenium.*;
 import org.openqa.selenium.chrome.ChromeDriver;
+import org.openqa.selenium.chrome.ChromeOptions;
 import org.openqa.selenium.support.FindBy;
 import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.WebDriverWait;
@@ -14,21 +16,16 @@ import org.springframework.boot.web.server.LocalServerPort;
 import javax.crypto.*;
 import javax.crypto.spec.SecretKeySpec;
 import java.io.UnsupportedEncodingException;
+import java.nio.charset.Charset;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
+import java.util.Arrays;
 import java.util.Base64;
 import java.util.List;
-
-import com.cloudstorage.service.NoteService;
-import com.cloudstorage.service.CredentialService;
+import java.util.Random;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 class CloudStorageApplicationTests {
-//	private NoteService noteService;
-//
-//	public CloudStorageApplicationTests(NoteService noteService) {
-//		this.noteService = noteService;
-//	}
 
 	@LocalServerPort
 	private int port;
@@ -36,10 +33,17 @@ class CloudStorageApplicationTests {
 	private WebDriver driver;
 
 	@BeforeAll
-	static void beforeAll() { WebDriverManager.chromedriver().setup(); }
+	static void beforeAll() {
+		WebDriverManager.chromedriver().setup();
+	}
 
 	@BeforeEach
-	public void beforeEach() { this.driver = new ChromeDriver(); }
+	public void beforeEach() {
+		ChromeOptions options = new ChromeOptions();
+		options.addArguments("--disable-extensions");
+		options.addArguments("--auto-open-devtools-for-tabs");
+		this.driver = new ChromeDriver(options);
+	}
 
 	@AfterEach
 	public void afterEach() {
@@ -47,28 +51,47 @@ class CloudStorageApplicationTests {
 			driver.quit();
 		}
 	}
+	public String generateRandom(){
+		return RandomStringUtils.random(10, true, true);
+	}
 	//helper methods
-	public void registerMethod(){
+	public String[] registerMethod(){
 			driver.get("http://localhost:" + this.port + "/signup");
+			// Generating random values to prevent repetition
+			String firstName = generateRandom();
+			String lastName = generateRandom();
+			String username = generateRandom();
+			String password = generateRandom();
 			WebElement inputField = driver.findElement(By.id("inputFirstName"));
-			inputField.sendKeys("Jane");
+			inputField.sendKeys(firstName);
 			inputField = driver.findElement(By.id("inputLastName"));
-			inputField.sendKeys("Doe");
+			inputField.sendKeys(lastName);
 			inputField = driver.findElement(By.id("inputUsername"));
-			inputField.sendKeys("janedoe");
+			inputField.sendKeys(username);
 			inputField = driver.findElement(By.id("inputPassword"));
-			inputField.sendKeys("aX38de-+ee");
+			inputField.sendKeys(password);
 			WebElement submitButton = driver.findElement(By.id("submit-button"));
 			submitButton.click();
+			String credentials[] = new String[2];
+			credentials[0] = username;
+			credentials[1] = password;
+			return credentials;
 		}
-	public void loginMethod() {
+	public String loginMethod(){
+		String [] param = new String[2];
+		param[0] = "janedoe";
+		param[1] = "aX38de-+ee";
+		return loginMethod(param);
+	}
+	public String loginMethod(String[] credentials) {
 		driver.get("http://localhost:" + this.port + "/login");
 		WebElement inputField =  driver.findElement(By.id("inputUsername"));
-		inputField.sendKeys("janedoe");
+		inputField.sendKeys(credentials[0]);
 		inputField = driver.findElement(By.id("inputPassword"));
-		inputField.sendKeys("aX38de-+ee");
+		inputField.sendKeys(credentials[1]);
 		WebElement loginButton = driver.findElement(By.id("submit-button"));
 		loginButton.click();
+		return "OK";
 	}
 	public void fillForm(String text, String field, WebDriver driver){
 		WebElement input = driver.findElement(By.id(field));
@@ -77,28 +100,19 @@ class CloudStorageApplicationTests {
 	}
 	public void accessTab(String name) throws InterruptedException {
 		JavascriptExecutor jse = (JavascriptExecutor) driver;
-//		System.out.println(driver.getTitle());
 		if(!driver.getTitle().equals("Home")){
-//			System.out.println("not yet");
 			Thread.sleep(2000);
-//			System.out.println(driver.getCurrentUrl());
 			WebElement tab = (new WebDriverWait(driver, 30))
 					.until(ExpectedConditions.presenceOfElementLocated(By.id(name)));
 			jse.executeScript("arguments[0].click()", tab);
 		}
 		else{
-//			System.out.println("Ready");
-//			System.out.println(driver.getCurrentUrl());
-
 			WebElement tab = (new WebDriverWait(driver, 30))
 				.until(ExpectedConditions.presenceOfElementLocated(By.id(name)));
-//				driver.findElement(By.id(name));
 			jse.executeScript("arguments[0].click()", tab);
 		}
 	}
 	public void setupNote(WebDriver driver) throws InterruptedException {
-//		 return noteService.createNote(new Note(null, "a", "b", userId));
-//		loginMethod();
 		accessTab("nav-notes-tab");
 		WebElement newNoteButton = driver.findElement(By.id("create-note"));
 		new WebDriverWait(driver, 5).until(ExpectedConditions.elementToBeClickable(newNoteButton)).click();
@@ -107,7 +121,15 @@ class CloudStorageApplicationTests {
 		WebElement submitButton = driver.findElement(By.id("save-changes"));
 		submitButton.click();
 	}
-//	public String setupCredential(){}
+	public void setupCredential(WebDriver driver){
+		WebElement createCredentialButton = driver.findElement(By.id("create-credential"));
+		new WebDriverWait(driver, 10).until(ExpectedConditions.elementToBeClickable(createCredentialButton)).click();
+		fillForm("www.msn.com/", "credential-url",driver);
+		fillForm("jjabrams", "credential-username", driver);
+		fillForm("j000008?!", "credential-password", driver);
+		WebElement submitButton = driver.findElement(By.id("save-credential"));
+		submitButton.click();
+	}
 	public String encryptValue(String data, String key) {
 		byte[] encryptedValue = null;
 		try {
@@ -123,8 +145,8 @@ class CloudStorageApplicationTests {
 		return Base64.getEncoder().encodeToString(encryptedValue);
 	}
 	public static boolean searchForId(String id, WebDriver driver) throws InterruptedException {
-		List<WebElement> rows = driver.findElements(By.tagName("tr"));
-		Thread.sleep(5000);
+		List<WebElement> rows = (new WebDriverWait(driver, 10))
+				.until(ExpectedConditions.presenceOfAllElementsLocatedBy(By.tagName("tr")));
 		for (WebElement row: rows) {
 			if(row.getAttribute("id").equals(id)){
 				return true;
@@ -136,44 +158,44 @@ class CloudStorageApplicationTests {
 		WebElement link = (new WebDriverWait(driver, 10))
 				.until(ExpectedConditions.presenceOfElementLocated(By.tagName("a")));
 		link.sendKeys(Keys.ENTER);
-//		Thread.sleep(2000);
 	}
 	public void checkNumber(String type) throws InterruptedException {
-		List<WebElement> buttons = driver.findElements(By.id(type));
-		Thread.sleep(5000);
+		List<WebElement> buttons = (new WebDriverWait(driver, 10))
+				.until(ExpectedConditions.presenceOfAllElementsLocatedBy(By.id(type)));
 		if(buttons.size() <1){
 			setupNote(driver);
 			returnHome(driver);
 		}
 	}
-//	@Test
-//	public void getLoginPage() {
-//		driver.get("http://localhost:" + this.port + "/login");
-//		Assertions.assertEquals("Login", driver.getTitle());
-//	}
-//
-//	@Test
-//	public void homePageAccessBlocked() {
-//		driver.get("http://localhost:" + this.port + "/home");
-//		//should redirect to login page
-//		Assertions.assertEquals("Login", driver.getTitle());
-//	}
-//
-//	@Test
-//	public void registerUser(){
-//		//signup as a new user
-//		registerMethod();
-//		//log in as previously registered user
-//		loginMethod();
-//		//homepage is accessible
-//		driver.get("http://localhost:" + this.port + "/home");
-//		Assertions.assertEquals("Home", driver.getTitle());
-//		//once logging out, homepage is no longer accessible
-//		WebElement logoutButton = driver.findElement(By.id("logout-button"));
-//		logoutButton.click();
-//		driver.get("http://localhost:" + this.port + "/home");
-//		Assertions.assertEquals("Login", driver.getTitle());
-//	}
+	@Test
+	public void getLoginPage() {
+		driver.get("http://localhost:" + this.port + "/login");
+		Assertions.assertEquals("Login", driver.getTitle());
+	}
+
+	@Test
+	public void homePageAccessBlocked() {
+		driver.get("http://localhost:" + this.port + "/home");
+		//should redirect to login page
+		Assertions.assertEquals("Login", driver.getTitle());
+	}
+
+	@Test
+	public void registerUser(){
+		//signup as a new user
+		String[] credentials = registerMethod();
+		System.out.println(Arrays.toString(credentials));
+		//log in as previously registered user
+		loginMethod(credentials);
+		//homepage is accessible
+		driver.get("http://localhost:" + this.port + "/home");
+		Assertions.assertEquals("Home", driver.getTitle());
+		//once logging out, homepage is no longer accessible
+		WebElement logoutButton = driver.findElement(By.id("logout-button"));
+		logoutButton.click();
+		driver.get("http://localhost:" + this.port + "/home");
+		Assertions.assertEquals("Login", driver.getTitle());
+	}
 
 	@Test
 	public void createNote() throws InterruptedException {
@@ -212,8 +234,6 @@ class CloudStorageApplicationTests {
 	@Test
 	public void deleteNote() throws InterruptedException {
 		loginMethod();
-//		setupNote(driver);
-//		returnHome(driver);
 		accessTab("nav-notes-tab");
 		checkNumber("delete-note");
 		accessTab("nav-notes-tab");
@@ -231,13 +251,7 @@ class CloudStorageApplicationTests {
 	public void createCredential() throws InterruptedException {
 			loginMethod();
 			accessTab("nav-credentials-tab");
-			WebElement createCredentialButton = driver.findElement(By.id("create-credential"));
-			new WebDriverWait(driver, 10).until(ExpectedConditions.elementToBeClickable(createCredentialButton)).click();
-			fillForm("www.msn.com/", "credential-url",driver);
-			fillForm("jjabrams", "credential-username", driver);
-			fillForm("j000008?!", "credential-password", driver);
-			WebElement submitButton = driver.findElement(By.id("save-credential"));
-			submitButton.click();
+			setupCredential(driver);
 			Assertions.assertEquals("Result", driver.getTitle());
 			Assertions.assertEquals("Success", driver.findElement(By.className("display-5")).getText());
 			returnHome(driver);
@@ -256,6 +270,8 @@ class CloudStorageApplicationTests {
 	public void deleteCredential() throws InterruptedException {
 		loginMethod();
 		accessTab("nav-credentials-tab");
+		checkNumber("delete-credential");
+		accessTab("nav-credentials-tab");
 		WebElement deleteCredentialButton = driver.findElement(By.id("delete-credential"));
 		String id = deleteCredentialButton.getAttribute("value");
 		new WebDriverWait(driver, 5).until(ExpectedConditions.elementToBeClickable(deleteCredentialButton)).click();
@@ -270,12 +286,13 @@ class CloudStorageApplicationTests {
 	public void editCredential() throws InterruptedException {
 		loginMethod();
 		accessTab("nav-credentials-tab");
+		checkNumber("edit-credential");
+		accessTab("nav-credentials-tab");
 		WebElement editCredentialButton = driver.findElement(By.id("edit-credential"));
 		new WebDriverWait(driver, 5).until(ExpectedConditions.elementToBeClickable(editCredentialButton)).click();
-		String id = editCredentialButton.getAttribute("value");
-		fillForm("email", "credential-url", driver);
-		fillForm("**", "credential-username", driver);
-		fillForm("__", "credential-password", driver);
+		fillForm("www.msn.com/email", "credential-url", driver);
+		fillForm("jjabrams**", "credential-username", driver);
+		fillForm("j000008?!__", "credential-password", driver);
 		WebElement submitButton = driver.findElement(By.id("save-credential"));
 		submitButton.click();
 		Assertions.assertEquals("Result", driver.getTitle());
@@ -285,5 +302,4 @@ class CloudStorageApplicationTests {
 		Assertions.assertEquals("jjabrams**", driver.findElement(By.id("jjabrams**")).getAttribute("innerHTML"));
 		Assertions.assertEquals("7WOb+UTwRWiN7cCHlf2gow==", driver.findElement(By.id("7WOb+UTwRWiN7cCHlf2gow==")).getAttribute("innerHTML"));
 	}
-
 }

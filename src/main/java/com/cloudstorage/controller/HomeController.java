@@ -27,7 +27,6 @@ public class HomeController {
     private CredentialService credentialService;
     private UserService userService;
     private EncryptionService encryptionService;
-//    private final static Logger logger = Logger.getLogger(HomeController.class.getName());
 
     public HomeController(NoteService noteService, FileService fileService, CredentialService credentialService,
                           EncryptionService encryptionService, UserService userService) {
@@ -138,9 +137,6 @@ public class HomeController {
             }
             if (uploadError == null) {
                 User currentUser =  this.userService.getUser(authentication.getName());
-//                if(fileUpload.getSize() > 131072){
-//                    System.out.println("File size is too large");
-//                    return "redirect:result?error";}
                 File file = new File(null, fileUpload.getOriginalFilename(),fileUpload.getContentType(), (int) fileUpload.getSize(), currentUser.getUserId(), fileUpload.getBytes());
                 int rowsAdded = this.fileService.createFile(file);
                 if (rowsAdded < 0) {
